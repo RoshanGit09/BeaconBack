@@ -128,26 +128,22 @@ def get_device():
         # Use the fixed email ID
         current_user_id = FIXED_EMAIL
 
+        # Prepare the response data
+        response_data = {"user_email": current_user_id}
+
         if current_data:
-            response_data = current_data.copy()
+            response_data.update(current_data)
 
-            if current_user_id and 'product_info' in current_data and current_data['product_info']:
-                need_analysis = False
-
+            # Perform analysis if product_info exists
+            if 'product_info' in current_data and current_data['product_info']:
                 if 'analyzed_products' not in current_data or not current_data['analyzed_products']:
-                    need_analysis = True
-
-                if need_analysis:
                     medical_record = fetch_user_medical_record(current_user_id)
                     analysis_result = analyze_products_with_llm(current_data['product_info'], medical_record)
                     response_data['analyzed_products'] = analysis_result
-
                     current_data['analyzed_products'] = analysis_result
                     print(f"Product analyzed for user {current_user_id} via API endpoint")
-
-            return jsonify(response_data)
-        else:
-            return jsonify({"error": f"{TARGET_DEVICE_NAME} not found"}), 404
+        print(response_data)
+        return jsonify(response_data)
 
 @app.route('/clear_user', methods=['POST'])
 @cross_origin()
@@ -163,18 +159,8 @@ def clear_user():
 def index():
     return render_template("index.html", device_data=current_data)
 
-def run_flask():
-    app.run(host="0.0.0.0", port=8080, use_reloader=False)
-
-# Remove BLE scanning from the main function
 def main():
-    flask_thread = Thread(target=run_flask, daemon=True)
-    flask_thread.start()
-    try:
-        while True:
-            pass  # Keep the server running
-    except KeyboardInterrupt:
-        print("Server stopped.")
+    app.run(host="0.0.0.0", port=8080, use_reloader=False)
 
 if __name__ == "__main__":
     main()
