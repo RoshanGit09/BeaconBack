@@ -6,7 +6,7 @@ requests
 asyncio
 
 pymongo
-
+bleak
 
 
 langchain
